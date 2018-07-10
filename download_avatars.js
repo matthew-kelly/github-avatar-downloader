@@ -1,15 +1,18 @@
+// requires
 require('dotenv').config();
 var request = require('request');
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var args = process.argv;
 
 console.log('Welcome to the GitHub Avatar Downloader!');
 
 function getRepoContributors(repoOwner, repoName, cb) {
-  if (args.length !== 4) {
+  if (args.length !== 4) { // incorrect number of args
     console.log('Incorrect number of arguments!')
     throw Error();
   }
+
   var options = { // url parameters
     url: `https://api.github.com/repos/${repoOwner}/${repoName}/contributors`,
     headers: {
@@ -23,6 +26,9 @@ function getRepoContributors(repoOwner, repoName, cb) {
 }
 
 function downloadImageByURL(url, filePath) {
+  if (!fs.existsSync('./avatars/')) {
+    mkdirp('./avatars/');
+  }
   request.get(url)
     .on('error', function(err) { // error for failed request
       throw err;
