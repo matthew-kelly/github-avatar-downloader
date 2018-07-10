@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/matthew-kelly/github-avatar-downloader#readme",
   "dependencies": {
+    "dotenv": "^6.0.0",
     "request": "^2.87.0"
   }
 }
