@@ -1,10 +1,16 @@
 var request = require('request');
 var fs = require('fs');
 var tokens = require('./secrets');
+var args = process.argv;
 
 console.log('Welcome to the GitHub Avatar Downloader!');
 
+
 function getRepoContributors(repoOwner, repoName, cb) {
+  if (args.length !== 4) {
+    console.log("Incorrect number of arguments!")
+    throw Error();
+  }
   var options = {
     url: "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/contributors",
     headers: {
@@ -14,18 +20,9 @@ function getRepoContributors(repoOwner, repoName, cb) {
   };
 
   request(options, function(err, res, body) {
-    body = JSON.parse(body);
-    body.forEach(function(user) {
-      console.log(user.avatar_url);
-    })
     cb(err, body);
   });
 }
-
-getRepoContributors("jquery", "jquery", function(err, result) {
-  console.log("Errors:", err);
-  // console.log("Result:", result);
-});
 
 function downloadImageByURL(url, filePath) {
   request.get(url)
@@ -37,8 +34,18 @@ function downloadImageByURL(url, filePath) {
         console.log('Error Code: ', response.statusCode);
         throw Error();
       }
+      console.log('Download started');
     })
-    .pipe(fs.createWriteStream('./' + filePath));
+    .on('end', function() {
+      console.log('Download complete');
+    })
+    .pipe(fs.createWriteStream('./avatars/' + filePath + '.jpg'));
 }
-// testing
-downloadImageByURL("https://avatars2.githubusercontent.com/u/2741?v=3&s=466", "avatars/kvirani.jpg")
+
+getRepoContributors(args[2], args[3], function(err, result) {
+  var userData = JSON.parse(result);
+  userData.forEach(function(user) {
+    downloadImageByURL(user.avatar_url, user.login);
+  });
+  // console.log(userData);
+});
